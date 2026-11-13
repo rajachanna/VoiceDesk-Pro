@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/License-MIT-667085)](LICENSE)
 [![Stage](https://img.shields.io/badge/Stage-LOCAL%20PROTOTYPE-0f766e)](#implementation-status)
 
-**[Dashboard source](src/voicedesk/static/index.html) · [Call-flow code](src/voicedesk/voice.py) · [Tests](tests) · [Case study](docs/CASE_STUDY.md) · [Client brief](docs/CLIENT_BRIEF.md) · [Discuss integration](https://nextgentechdev.com)**
+**[Dashboard source](src/voicedesk/static/index.html) · [Call-flow code](src/voicedesk/voice.py) · [Run offline demo](scripts/demo.py) · [Tests](tests) · [Case study](docs/CASE_STUDY.md) · [Client brief](docs/CLIENT_BRIEF.md) · [Discuss integration](https://nextgentechdev.com)**
 
 </div>
 
@@ -150,6 +150,16 @@ pip install -e ".[ai]"
 ```
 
 **Optional and not independently provider-tested.** The FAQ adapter receives only the manually entered dashboard question and fixed public business facts. It never reads the appointment or lead database, never promises an available slot and cannot create bookings. Avoid entering personal or sensitive information into the FAQ.
+
+## One-command client demonstration
+
+After installing `.[dev]`, run:
+
+```bash
+python scripts/demo.py
+```
+
+The demo creates an isolated temporary database, confirms a synthetic appointment, rejects a duplicate slot, captures a sample lead, answers an FAQ, processes a **synthetically signed** Twilio voice/menu webhook and exports an ICS file. It never uses a real phone number, Twilio account, customer record or external AI provider.
 
 ## Test the actual functionality
 
