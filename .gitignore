@@ -1,0 +1,14 @@
+# Local credentials, sensitive customer records and build products
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+dist/
+data/
+*.sqlite*
+*.db
+.DS_Store
