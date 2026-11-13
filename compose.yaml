@@ -1,0 +1,13 @@
+services:
+  voicedesk:
+    build: .
+    env_file: .env
+    environment:
+      VD_DB_PATH: /data/voicedesk.sqlite
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - voicedesk-data:/data
+    restart: unless-stopped
+volumes:
+  voicedesk-data:
