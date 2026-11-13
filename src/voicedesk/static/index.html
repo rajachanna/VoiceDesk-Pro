@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>VoiceDesk Pro | Receptionist Operations</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#eef4ff;background:#090f1a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 92% 0,#1c2845,transparent 38%),#090f1a}
+main{max-width:1180px;margin:0 auto;padding:27px 20px 78px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px;font-size:24px;font-weight:850;letter-spacing:-.6px}
+.mark{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#59eeb9,#4c75e6);color:#081625;display:grid;place-items:center;font-size:25px}
+.badge{border:1px solid #486f6e;color:#80e5b9;border-radius:20px;font-size:11px;letter-spacing:.07em;font-weight:800;padding:8px 13px}
+h1{margin:46px 0 9px;font-size:clamp(30px,4.6vw,48px);line-height:1.12;letter-spacing:-1.5px}
+h2{font-size:17px;margin:0 0 16px}
+p{color:#9aabc0;line-height:1.55}
+a{color:#7ff0bc;text-decoration:none}a:hover{text-decoration:underline}
+.note{background:#1b2635;border-left:3px solid #e0ad6d;padding:12px 15px;border-radius:7px;color:#d9c4a2;font-size:13px;margin:20px 0}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0}
+input,select,textarea{font-family:inherit;background:#142137;color:#e9f2ff;border:1px solid #34445e;border-radius:10px;padding:12px 13px;font-size:14px;min-width:0}
+input::placeholder,textarea::placeholder{color:#899bb3}
+button{font-family:inherit;font-size:13px;padding:12px 17px;font-weight:800;cursor:pointer;border:0;border-radius:10px;background:#52e7b2;color:#062a20}
+button:hover{filter:brightness(1.12)}
+button.secondary{background:#263c5c;color:#e2eefc}
+button.danger{background:#6c3441;color:#ffdae0}
+#key{flex:1;min-width:230px;max-width:440px}
+#feedback{font-size:13px;color:#f4b4b5;min-height:22px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.stat,.panel{background:#101c2f;border:1px solid #293950;border-radius:15px;padding:21px}
+.stat small{display:block;color:#8e9fb7;font-size:12px}
+.stat strong{display:block;font-size:30px;letter-spacing:-.8px;margin-top:12px}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.spaced{margin-top:17px}
+.formrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.formrow input{flex:1}
+.formrow label{font-size:13px;color:#bbcce0}
+label.caption{display:block;color:#93a4bb;font-size:12px;margin:8px 0 6px}
+#slotList{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.slot{background:#1a324a;color:#8ee7be;border:1px solid #35556b;max-width:100%;text-align:left}
+.slot.selected{background:#235843;color:#d3ffe8;border-color:#4bedad}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:#8c9eb6;font-size:12px}
+th,td{border-bottom:1px solid #273950;padding:12px 8px;white-space:nowrap;text-align:left}
+tbody tr:last-child td{border-bottom:none}
+.empty{color:#8da0b6}
+section.panel p{font-size:13px;margin:0 0 14px}
+.qrow{display:flex;gap:8px;flex-wrap:wrap}
+.qrow input{flex:1;min-width:220px}
+.reply{margin-top:11px;min-height:50px;padding:12px;background:#14253b;border-radius:9px;color:#bcdbda;font-size:13px;line-height:1.55}
+footer{font-size:12px;color:#8b9db4;margin-top:25px;line-height:1.6}
+@media(max-width:920px){.stats{grid-template-columns:repeat(2,1fr)}.columns{grid-template-columns:1fr}}
+@media(max-width:480px){.stats{grid-template-columns:1fr}.stat strong{font-size:26px}main{padding:21px 13px 55px}}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand"><div class="mark">◉</div>VoiceDesk <span style="color:#65ecb8">Pro</span></div>
+<span class="badge">● V0.1 · LOCAL RECEPTIONIST DEMO</span></header>
+<h1>Every conversation.<br>Every appointment. One workspace.</h1>
+<p>Appointment operations, call-state architecture, lead records and an optional signed Twilio voice menu.</p>
+<div class="note">This UI shows a local SQLite demo. Phone calls require a separate Twilio account, a verified HTTPS webhook and configuration. Google Calendar, live human transfer and external CRM sync are not connected.</div>
+<div class="toolbar">
+<input id="key" type="password" placeholder="Enter VD_OPERATOR_KEY" autocomplete="off">
+<button id="connect">Open workspace</button>
+<button id="refresh" class="secondary">Refresh</button>
+<button id="export" class="secondary">Export calendar (.ics)</button>
+</div>
+<div id="feedback" role="status"></div>
+<div class="stats">
+<div class="stat"><small>Confirmed appointments</small><strong id="bookCount">—</strong></div>
+<div class="stat"><small>Captured leads</small><strong id="leadCount">—</strong></div>
+<div class="stat"><small>Voice sessions stored</small><strong id="sessionCount">—</strong></div>
+<div class="stat"><small>System state</small><strong style="font-size:20px;color:#67e7af">LOCAL DEMO</strong></div>
+</div>
+<div class="columns">
+<section class="panel">
+<h2>Book a demo consultation</h2>
+<p>Pick an actual available 30-minute local slot and explicitly confirm booking.</p>
+<label class="caption" for="day">Consultation day (business timezone)</label>
+<div class="formrow"><input type="date" id="day"><button class="secondary" id="slots">Find slots</button></div>
+<div id="slotList"><span class="empty">Connect and choose a day to see available slots.</span></div>
+<label class="caption" for="name">Customer name</label>
+<div class="formrow"><input id="name" maxlength="80" placeholder="e.g. Alex Morgan"></div>
+<label class="caption" for="phone">Phone / contact number</label>
+<div class="formrow"><input id="phone" maxlength="35" placeholder="e.g. +1 555 010 0000"></div>
+<div class="formrow"><label><input type="checkbox" id="confirm"> Customer confirmed this appointment</label></div>
+<button id="book">Confirm booking</button>
+</section>
+<section class="panel">
+<h2>Receptionist FAQ test</h2>
+<p>Use the local FAQ or, when configured, the optional external AI responder. No appointment is created by FAQ answers.</p>
+<div class="qrow"><input id="question" maxlength="350" placeholder="What hours are you open?"><button id="ask">Ask</button></div>
+<div class="reply" id="reply">Ask about opening hours, appointment booking or staff contact.</div>
+<h2 style="margin-top:26px">Capture a demo lead</h2>
+<p>Create a local lead record without external CRM integration.</p>
+<div class="formrow"><input id="leadName" maxlength="80" placeholder="Contact name"><input id="leadPhone" maxlength="35" placeholder="Phone"></div>
+<div class="formrow"><textarea id="leadMessage" maxlength="400" rows="2" style="width:100%" placeholder="Requested service or follow-up"></textarea></div>
+<button class="secondary" id="saveLead">Save lead</button>
+</section></div>
+<section class="panel spaced"><h2>Appointments</h2>
+<div class="tablewrap"><table><thead><tr><th>Start (UTC)</th><th>Customer</th><th>Service</th><th>Status</th></tr></thead><tbody id="appointments"><tr><td class="empty" colspan="4">Connect to load appointments.</td></tr></tbody></table></div></section>
+<section class="panel spaced"><h2>Recent leads</h2>
+<div class="tablewrap"><table><thead><tr><th>Name</th><th>Contact</th><th>Message</th></tr></thead><tbody id="leads"><tr><td class="empty" colspan="3">Connect to load leads.</td></tr></tbody></table></div></section>
+<footer>Prototype by <a href="https://nextgentechdev.com">NextGen Tech Solutions</a> · <a href="/docs">API Documentation</a> · <a href="https://github.com/rajachanna/VoiceDesk-Pro">GitHub source</a>. Customer data remains in the local database unless integrations are deliberately configured. No call recordings are made by this application.</footer>
+</main>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+let token="",chosen=null,slots=[];
+async function api(path,method="GET",body){
+  const response=await fetch(path,{method,cache:"no-store",headers:{"X-Operator-Key":token,...(body?{"Content-Type":"application/json"}:{})},...(body?{body:JSON.stringify(body)}:{})});
+  if(!response.ok){let msg=String(response.status);try{const j=await response.json();msg=typeof j.detail==="string"?j.detail:JSON.stringify(j.detail);}catch{}throw Error(msg)}
+  return response;
+}
+async function load(){
+ if(!token){$("feedback").textContent="Enter your operator key.";return}
+ try{
+  $("feedback").textContent="";
+  const [metrics,appts,leads]=await Promise.all([api("/api/metrics"),api("/api/appointments"),api("/api/leads")]);
+  const m=await metrics.json(),a=await appts.json(),l=await leads.json();
+  $("bookCount").textContent=m.appointments_total;
+  $("leadCount").textContent=m.leads_total;
+  $("sessionCount").textContent=m.voice_sessions;
+  renderTable("appointments",a.appointments,["start_utc","customer_name","service","status"]);
+  renderTable("leads",l.leads,["name","phone","message"]);
+ }catch(e){$("feedback").textContent=e.message}
+}
+function renderTable(id,rows,columns){
+ const tbody=$(id);tbody.replaceChildren();
+ if(!rows.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=columns.length;td.className="empty";td.textContent="No records yet.";tr.appendChild(td);tbody.appendChild(tr)}
+ for(const row of rows){const tr=document.createElement("tr");for(const col of columns){const td=document.createElement("td");td.textContent=String(row[col]??"");tr.appendChild(td)}tbody.appendChild(tr)}
+}
+async function findSlots(){
+ $("feedback").textContent="";chosen=null;slots=[];$("slotList").replaceChildren();
+ try{
+  if(!$("day").value)throw Error("Choose a date.");
+  slots=(await (await api("/api/slots?day="+encodeURIComponent($("day").value))).json()).slots;
+  if(!slots.length){$("slotList").textContent="No slots available for this day.";return}
+  slots.forEach(slot=>{const button=document.createElement("button");button.className="slot";button.textContent=slot.local_time;button.addEventListener("click",()=>{chosen=slot;$("slotList").querySelectorAll("button").forEach(x=>x.classList.remove("selected"));button.classList.add("selected")});$("slotList").appendChild(button)});
+ }catch(e){$("feedback").textContent=e.message}
+}
+$("connect").onclick=()=>{token=$("key").value;$("key").value="";load()};
+$("refresh").onclick=load;
+$("slots").onclick=findSlots;
+$("book").onclick=async()=>{
+ try{
+  if(!chosen)throw Error("Select an available slot.");
+  if(!$("confirm").checked)throw Error("Customer confirmation is required.");
+  await api("/api/appointments","POST",{start_utc:chosen.start_utc,customer_name:$("name").value,phone:$("phone").value,service:"consultation",confirmed:true});
+  $("feedback").textContent="Appointment saved in local demo calendar.";
+  $("confirm").checked=false;await load();await findSlots();
+ }catch(e){$("feedback").textContent=e.message}
+};
+$("saveLead").onclick=async()=>{
+ try{
+  await api("/api/leads","POST",{name:$("leadName").value,phone:$("leadPhone").value,message:$("leadMessage").value});
+  $("leadMessage").value="";await load();
+ }catch(e){$("feedback").textContent=e.message}
+};
+$("ask").onclick=async()=>{
+ try{const result=await (await api("/api/faq","POST",{question:$("question").value})).json();
+ $("reply").textContent=result.reply+" · "+result.engine;
+ }catch(e){$("reply").textContent=e.message}
+};
+$("export").onclick=async()=>{
+ try{const response=await api("/api/calendar.ics");const blob=await response.blob();
+ const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="voicedesk-demo.ics";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)
+ }catch(e){$("feedback").textContent=e.message}
+};
+$("day").value=new Date(Date.now()+86400000).toISOString().slice(0,10);
+})();
+</script></body></html>
